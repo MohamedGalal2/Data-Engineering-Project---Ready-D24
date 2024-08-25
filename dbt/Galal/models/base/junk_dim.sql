@@ -1,8 +1,6 @@
-{{ config(
-    materialized='table',
-) }}
+
 SELECT
-    ROW_NUMBER() OVER () AS junk_key,
+    ROW_NUMBER() OVER () AS junk_id,
     automatic_transmission,
     damaged,
     first_owner,
