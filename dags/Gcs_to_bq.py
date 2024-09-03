@@ -1,5 +1,3 @@
-# implement Hello World DAG
-
 import logging
 from datetime import datetime
 
@@ -7,13 +5,12 @@ from airflow import DAG
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
-
-
+from airflow.providers.google.cloud.operators.bigquery import BigQueryCheckOperator
+from google.cloud import storage
 
 def print_hello():
     logging.info("Galal")
     return "printed"
-
 
 dag = DAG(
     dag_id="Galal_Transfer_Dag",
@@ -24,8 +21,8 @@ dag = DAG(
 )
 
 schema_fields = [
-    {'name': 'brand', 'type': 'STRING', 'mode': 'NULLABLE'},
-    {'name': 'model', 'type': 'STRING', 'mode': 'NULLABLE'},
+    {'name': 'brand', 'type': 'STRING', 'mode': 'Required'},
+    {'name': 'model', 'type': 'STRING', 'mode': 'Required'},
     {'name': 'year', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'mileage', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'engine', 'type': 'STRING', 'mode': 'NULLABLE'},
@@ -59,29 +56,56 @@ schema_fields = [
     {'name': 'heated_seats', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'interior_color', 'type': 'STRING', 'mode': 'NULLABLE'},
     {'name': 'exterior_color', 'type': 'STRING', 'mode': 'NULLABLE'},
-    {'name': 'price', 'type': 'FLOAT', 'mode': 'NULLABLE'}
+    {'name': 'price', 'type': 'FLOAT', 'mode': 'Required'}
 ]
-
-DATASET_NAME="landing_09"
-TABLE_NAME="cars-com_dataset"
+DATASET_NAME = "landing_09"
+TABLE_NAME = "cars-com_dataset"
+BUCKET_NAME = "ready-project-dataset"
+GCS_FILE_PATH = "cars-com_dataset/cars-com_dataset.csv"
 
 start_task = EmptyOperator(task_id="start_task", dag=dag)
 
+# SQL Operator to check if data exists in the BigQuery table
+# def check_gcs_file_exists(bucket_name, file_path):
+#     """Check if the file exists in GCS and has content."""
+#     client = storage.Client()
+#     bucket = client.get_bucket(bucket_name)
+#     blob = bucket.blob(file_path)
+
+#     if blob.exists():
+#         # Check if the file size is greater than 0 (i.e., it contains data)
+#         if blob.size > 0:
+#             logging.info(f"File {file_path} exists in bucket {bucket_name} and is not empty.")
+#             return True
+#         else:
+#             logging.warning(f"File {file_path} exists in bucket {bucket_name} but is empty.")
+#             return False
+#     else:
+#         logging.warning(f"File {file_path} does not exist in bucket {bucket_name}.")
+#         return False
+# check_data_exists=PythonOperator(
+# task_id="check_gcs_data_exists",
+# python_callable=check_gcs_file_exists,
+# op_args=[BUCKET_NAME, GCS_FILE_PATH],
+# dag=dag,
+# )
 
 load_csv = GCSToBigQueryOperator(
     task_id="gcs_to_bigquery_example_Galal",
-    bucket="ready-project-dataset",
-    source_objects=["cars-com_dataset/cars-com_dataset.csv"],
-    destination_project_dataset_table=f"{DATASET_NAME}.{TABLE_NAME}",create_disposition='CREATE_IF_NEEDED',
+    bucket=BUCKET_NAME,
+    source_objects=[GCS_FILE_PATH],
+    destination_project_dataset_table=f"{DATASET_NAME}.{TABLE_NAME}",
+    create_disposition='CREATE_IF_NEEDED',
     write_disposition="WRITE_TRUNCATE",
     schema_fields=schema_fields,
     source_format='CSV',
-    skip_leading_rows =1, # skip Headers 
+    skip_leading_rows=1,  # Skip Headers
     ignore_unknown_values=True,
-    max_bad_records=100000
-
+    max_bad_records=100000,
+    dag=dag
 )
 
 end_task = EmptyOperator(task_id="end_task", dag=dag)
 
+# Set task dependencies
 start_task >> load_csv >> end_task
