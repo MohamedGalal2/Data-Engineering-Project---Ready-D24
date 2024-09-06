@@ -3,9 +3,9 @@
 WITH fuel_cte AS (
     SELECT 
         fuel_type, 
-        COUNT(*) * 1.0 / (SELECT COUNT(*) FROM `ready-data-de24.dbt_mgalal_star.engine_dim`) AS percentage
+        COUNT(*) * 1.0 / (SELECT COUNT(*) FROM {{ ref('engine_dim') }}) AS percentage
     FROM 
-        `ready-data-de24.dbt_mgalal_star.engine_dim`
+        {{ ref('engine_dim') }}
     GROUP BY 
         fuel_type
 )
