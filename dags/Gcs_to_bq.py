@@ -91,7 +91,7 @@ start_task = EmptyOperator(task_id="start_task", dag=dag)
 # )
 
 load_csv = GCSToBigQueryOperator(
-    task_id="gcs_to_bigquery_example_Galal",
+    task_id="transfer_gcs_to_bigquery",
     bucket=BUCKET_NAME,
     source_objects=[GCS_FILE_PATH],
     destination_project_dataset_table=f"{DATASET_NAME}.{TABLE_NAME}",
