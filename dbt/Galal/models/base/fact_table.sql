@@ -1,4 +1,47 @@
+with landing_09_staging as (
+    select 
+    brand,
+    price,
+    mileage,
+    IFNULL(engine, 'Unknown') AS engine,
+    IFNULL(engine_size,-1) as engine_size ,
+    IFNULL(transmission , 'Unknown') AS transmission,
+    IFNULL(fuel_type , 'Unknown') AS fuel_type,
+    IFNULL(min_mpg,-1) as min_mpg,
+    IFNULL(max_mpg,-1) as max_mpg,
+    IFNULL(automatic_transmission, -1) AS automatic_transmission,
+    IFNULL(damaged, -1) AS damaged,
+    IFNULL(first_owner, -1) AS first_owner,
+    IFNULL(personal_using, -1) AS personal_using,
+    IFNULL(turbo, -1) AS turbo,
+    IFNULL(alloy_wheels, -1) AS alloy_wheels,
+    IFNULL(adaptive_cruise_control, -1) AS adaptive_cruise_control,
+    IFNULL(navigation_system, -1) AS navigation_system,
+    IFNULL(power_liftgate, -1) AS power_liftgate,
+    IFNULL(backup_camera, -1) AS backup_camera,
+    IFNULL(keyless_start, -1) AS keyless_start,
+    IFNULL(remote_start, -1) AS remote_start,
+    IFNULL(sunroof_or_moonroof, -1) AS sunroof_or_moonroof,
+    IFNULL(automatic_emergency_braking, -1) AS automatic_emergency_braking,
+    IFNULL(stability_control, -1) AS stability_control,
+    IFNULL(leather_seats, -1) AS leather_seats,
+    IFNULL(memory_seat, -1) AS memory_seat,
+    IFNULL(third_row_seating, -1) AS third_row_seating,
+    IFNULL(apple_car_play_or_android_auto, -1) AS apple_car_play_or_android_auto,
+    IFNULL(bluetooth, -1) AS bluetooth,
+    IFNULL(usb_port, -1) AS usb_port,
+    IFNULL(heated_seats, -1) AS heated_seats,
+    IFNULL(model,'Unknown') as model,
+    year,
+    IFNULL(interior_color,'Unknown') as interior_color,
+    IFNULL(exterior_color,'Unknown') as exterior_color,
+    IFNULL(drivetrain,'Unknown') as drivetrain
+    from `ready-data-de24.landing_09.cars-com_dataset`
 
+)
+,
+
+fact_table_cte as (
     SELECT
         -- Select and transform fields as necessary
     brand,
@@ -7,7 +50,7 @@
     e.engine_id as engine_key ,
     j.junk_id as junk_key ,
     m.model_id as model_key
-FROM `ready-data-de24.landing_09.cars-com_dataset` t
+FROM  landing_09_staging t
 LEFT JOIN  {{ ref('engine_dim') }} e 
     ON t.engine = e.engine 
     AND t.engine_size = e.engine_size 
@@ -45,4 +88,12 @@ LEFT JOIN  {{ ref('model_dim') }} m
     AND t.exterior_color = m.exterior_color 
     AND t.drivetrain = m.drivetrain
 
-
+)
+select   brand,
+    price,
+    IFNULL(mileage,-1) as mileage ,
+     engine_key ,
+     junk_key ,
+     model_key
+    from fact_table_cte
+    
