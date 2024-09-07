@@ -44,7 +44,7 @@ SELECT
     bluetooth,
     usb_port,
     heated_seats
-FROM `ready-data-de24.landing_09.cars-com_dataset`
+FROM {{ source('landing_09', 'cars-com_dataset') }}
 group by automatic_transmission, damaged, first_owner, personal_using, turbo,
                        alloy_wheels, adaptive_cruise_control, navigation_system, power_liftgate,
                        backup_camera, keyless_start, remote_start, sunroof_or_moonroof,

@@ -36,7 +36,7 @@ with landing_09_staging as (
     IFNULL(interior_color,'Unknown') as interior_color,
     IFNULL(exterior_color,'Unknown') as exterior_color,
     IFNULL(drivetrain,'Unknown') as drivetrain
-    from `ready-data-de24.landing_09.cars-com_dataset`
+    from {{ source('landing_09', 'cars-com_dataset') }}
 
 )
 ,
