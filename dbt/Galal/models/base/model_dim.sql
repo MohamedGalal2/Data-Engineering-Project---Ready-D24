@@ -7,7 +7,7 @@ SELECT
     interior_color,
     exterior_color,
     drivetrain
-FROM `ready-data-de24.landing_09.cars-com_dataset`
+FROM {{ source('landing_09', 'cars-com_dataset') }}
 GROUP BY model, year, interior_color, exterior_color, drivetrain
 )
 select model_id,

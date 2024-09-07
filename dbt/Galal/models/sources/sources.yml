@@ -1,0 +1,7 @@
+version: 2
+sources:
+  - name: landing_09
+    database: ready-data-de24
+    schema: landing_09
+    tables:
+      - name: cars-com_dataset
